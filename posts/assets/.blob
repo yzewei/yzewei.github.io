@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=auto"
+    />
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+
+    <title>AFFiNE</title>
+    <meta name="theme-color" content="#fafafa" />
+    
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" sizes="192x192" href="/favicon-192.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta name="emotion-insertion-point" content="" />
+    <meta property="description" content="There can be more than Notion and Miro. AFFiNE is a next-gen knowledge base that brings planning, sorting and creating all together." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://app.affine.pro/" />
+    <meta
+      name="twitter:title"
+      content="AFFiNE: There can be more than Notion and Miro."
+    />
+    <meta name="twitter:description" content="There can be more than Notion and Miro. AFFiNE is a next-gen knowledge base that brings planning, sorting and creating all together." />
+    <meta name="twitter:site" content="@AffineOfficial" />
+    <meta name="twitter:image" content="https://affine.pro/og.jpeg" />
+    <meta
+      property="og:title"
+      content="AFFiNE: There can be more than Notion and Miro."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:description" content="There can be more than Notion and Miro. AFFiNE is a next-gen knowledge base that brings planning, sorting and creating all together." />
+    <meta property="og:url" content="https://app.affine.pro/" />
+    <meta property="og:image" content="https://affine.pro/og.jpeg" />
+  <meta name="env:isSelfHosted" content="true"><meta name="env:publicPath" content="/"><link href="/styles.5e531019.css" rel="stylesheet"><link href="/vendor.1ea12538.css" rel="stylesheet"></head>
+
+  <body>
+    <div id="app" data-version="1623f5d82"></div>
+  <script defer src="/js/runtime.b9b32832.js"></script><script defer src="/js/npm-blocksuite.5cdfa5c2.js"></script><script defer src="/js/npm-rxjs.b6baf7f1.js"></script><script defer src="/js/npm-emotion.2143d6ce.js"></script><script defer src="/js/npm-react.a3eea5cc.js"></script><script defer src="/js/npm-jotai.2ac8eae3.js"></script><script defer src="/js/vendor.820fca71.js"></script><script defer src="/js/8823.061bb02a.js"></script><script defer src="/js/3598.7abee6c7.js"></script><script defer src="/js/app.7af92d01.js"></script></body>
+</html>
