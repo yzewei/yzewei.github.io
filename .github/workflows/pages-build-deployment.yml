@@ -1,0 +1,34 @@
+name: 自定义 Pages 构建
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: 安装依赖
+        run: npm install
+
+      - name: 自动更新文章索引
+        run: bash posts/update_index.sh
+
+      - name: 构建 Hexo
+        run: npx hexo clean && npx hexo generate
+
+      - uses: actions/configure-pages@v3
+
+      # ✅ 升级为 v2
+      - uses: actions/upload-pages-artifact@v2
+        with:
+          path: ./public
+
+      - uses: actions/deploy-pages@v1
+
