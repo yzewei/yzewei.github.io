@@ -1,3 +1,9 @@
+---
+title: 固件bios升降级
+date: 2025-10-10 10:00:00
+categories: 个人
+tags: [bios, 固件]
+---
 # 固件bios升降级
 
 # 1. 背景
@@ -26,15 +32,15 @@
 
 &#x20;       a. 安全设置 --> 更新固件，然后选择U盘中已经拷贝好的固件：
 
-![](assets/4pQhzoVgOw5rD4gbS2wlOjBBjQ4GMDDNNA6va6tS43k=.png)
+![](/assets/4pQhzoVgOw5rD4gbS2wlOjBBjQ4GMDDNNA6va6tS43k=.png)
 
 &#x20;      选择后等待更新完成即可。
 
 （3）确认固件是否更新
 
-![](assets/ielzz7cmowVty2yOYnjVgipMq0TbKFixFBmO669jS4s=.png)
+![](/assets/ielzz7cmowVty2yOYnjVgipMq0TbKFixFBmO669jS4s=.png)
 
-![](assets/6TTkudfqwNx5BHiSuMf9D4pa7DPuhRk5zwRkeJy810o=.png)
+![](/assets/6TTkudfqwNx5BHiSuMf9D4pa7DPuhRk5zwRkeJy810o=.png)
 
 &#x20;       此时，可以看到固件即为我们刚刚烧写的固件。
 
@@ -50,7 +56,7 @@ d. 使用"spi -u <固件文件>" 命令来更新固件
 
 e. 输入reset命令重启机器
 
-![](assets/ZIHZCWXaEAc70NM6mkpPX0fWc_yfBfFUy7rNRMHjIRY=.png)
+![](/assets/ZIHZCWXaEAc70NM6mkpPX0fWc_yfBfFUy7rNRMHjIRY=.png)
 
 # 5. 使用软件烧写固件
 
@@ -64,33 +70,33 @@ e. 输入reset命令重启机器
 
 &#x20;   注意下图中标价的圆圈的方向，防止后面回插错误：
 
-![](assets/MRXUqoIjtuKuQ9EtjXn9_Y7Rzxyv66TWBJVgg1j5U-4=.png)
+![](/assets/MRXUqoIjtuKuQ9EtjXn9_Y7Rzxyv66TWBJVgg1j5U-4=.png)
 
 &#x20;   2）烧写
 
 &#x20;   a. 找到对应的芯片后，将其轻取下来，然后放到卡槽上，根据下面的标记放置芯片，不要放反：
 
-![](assets/l7ucTqmmWZQz1hLoP753jJTB3kP4R63oZwkZiJ1sMB4=.png)
+![](/assets/l7ucTqmmWZQz1hLoP753jJTB3kP4R63oZwkZiJ1sMB4=.png)
 
 b. 识别固件芯片
 
 此时便可以在软件上进行操作：
 
-![](assets/1DvDSvh4NlN8aRyHKrZOX1OMdleJ5L4gCVog9zmuVnY=.png)
+![](/assets/1DvDSvh4NlN8aRyHKrZOX1OMdleJ5L4gCVog9zmuVnY=.png)
 
 选择对应的芯片型号（**这里的型号并不是固件的实际型号，只要型号的类型与机器上固件擦除和烧写的命令一致即可**）：
 
-![](assets/dYQNWvuQlx1kiSjCo0VarGzc8ZxfdDfybdFO-oCPahY=.png)
+![](/assets/dYQNWvuQlx1kiSjCo0VarGzc8ZxfdDfybdFO-oCPahY=.png)
 
 c. 加载要烧写的固件文件
 
-![](assets/nNgTnK55lCI5bN83wjDpRI7LqFM8Ez0TF6o-bZaGq_A=.png)
+![](/assets/nNgTnK55lCI5bN83wjDpRI7LqFM8Ez0TF6o-bZaGq_A=.png)
 
 d. 开始烧写
 
 选择自动，此时可以看到烧写的过程：擦除 --> 编程 --> 校验
 
-![](assets/cEh_q2JaeMeb1ZbSNYoCegtojHrCIAkLrxkkFp1Eo0U=.png)
+![](/assets/cEh_q2JaeMeb1ZbSNYoCegtojHrCIAkLrxkkFp1Eo0U=.png)
 
 3）插回机箱，启动机器
 
