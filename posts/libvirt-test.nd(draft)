@@ -1,0 +1,129 @@
+测试 (Testing)
+1. 单元测试 (Unit tests)
+作用与目的：
+
+单元测试是源代码中自带的一套测试套件，主要用于测试 libvirt 的核心、低级功能。
+
+核心测试内容包括：XML 解析器/格式化程序、QEMU 命令行生成器、QEMU 能力探测 等。
+
+要求与运行：
+
+强制性要求： 开发者在向上游（libvirt 主仓库）提交任何代码补丁之前，必须运行并通过所有单元测试。这是代码被接受的前提条件。
+
+运行命令： 在源代码目录下，可以通过以下命令运行测试套件：
+
+Bash
+
+$ ninja test
+2. 容器构建 (Container builds)
+作用与目的：
+
+严格来说，容器构建并非传统意义上的“测试”，但它提供了一种在预定义、广泛可用的环境中构建 libvirt 的方法。
+
+它的价值在于能够扩大代码覆盖范围，确保代码在不同的 发行版 (distros)、架构 (architectures)、工具链版本 (toolchain flavors) 和库版本 (library versions) 下都能干净地编译和运行。
+
+因此，它是接受上游贡献时的一个非常有价值的标记 (marker)。
+
+推荐做法：
+
+开发者被推荐在各种容器中针对其修改运行 libvirt 构建，以确保在提交补丁之前一切运行正常。
+
+注册表 (Registry)
+libvirt 项目的容器镜像托管在 GitLab 容器注册表 (registry.gitlab.com/libvirt/libvirt)。
+
+使用该注册表可以自动拉取预构建的层，从而避免了在本地使用 ci/containers/ 中的 Dockerfile 从头构建所有容器。
+
+使用 GitLab CI 运行容器构建
+只要 GitLab 账户有可用的 CI 分钟数，在你 fork (分叉) 的仓库的每个分支推送时，流水线（pipelines）都会自动运行。
+
+在本地运行容器作业 (Running container jobs locally)
+配置来源： GitLab CI 配置文件是上游流水线执行各种作业规范的唯一真相来源 (only source of truth)。
+
+辅助脚本： 所有的 Bash 脚本都被提取到 ci/jobs.sh 中的独立 Shell 函数中。
+
+本地执行工具： ci/helper 脚本可以拉取、构建和测试（如果适用）当前本地分支上的更改。
+
+它支持 Docker 和 Podman 两种容器运行时，并会自动选择系统中已配置的运行时。
+
+Podman 先决条件
+推荐原因： 推荐使用 Podman，因为它采用无守护进程 (daemonless) 架构，并且默认以 无根 (rootless) 方式执行容器，安全性更高。
+
+安装和验证：
+
+Bash
+
+$ sudo dnf install -y podman
+$ podman ps  # 验证系统是否就绪（应打印空表）
+Docker 先决条件
+安装和启动： 需要安装 Docker 并启动 Docker 服务。
+
+Bash
+
+$ sudo dnf install -y docker
+$ sudo systemctl start docker
+$ sudo docker ps # 验证系统是否就绪（应打印空表）
+权限设置（安全警告）： 为了避免使用 sudo，可以添加当前用户到 docker 组。
+
+Bash
+
+$ sudo groupadd docker
+$ sudo usermod $USER -a -G docker
+$ sudo chown :docker /var/run/docker.sock
+注意： 任何上述配置都可能允许用户利用 Docker 绑定挂载或其他特权操作来攻击整个宿主机，因此只应在开发机器上执行。
+
+本地执行容器构建示例 (Examples)
+所有示例都使用 ci/helper 脚本：
+
+列出可用镜像：
+
+Bash
+
+$ ./helper list-images
+运行 GitLab 上的 website 作业，针对 debian-10 镜像：
+
+Bash
+
+$ ci/helper run --job website debian-10
+运行 rpmbuild 作业，针对 fedora-38 镜像：
+
+Bash
+
+$ ci/helper run --job rpmbuild fedora-38
+使用自定义注册表的镜像运行 build 作业：
+
+Bash
+
+$ ci/helper run --job build --image-prefix registry.gitlab.com/<user>/libvirt/ci- alpine-edge
+进入交互式 shell 进行调试：
+
+Bash
+
+$ ci/helper run --job shell alpine-edge
+3. 集成测试 (Integration tests)
+作用与目的：
+
+集成测试，也称为功能测试 (functional tests)，用于编写和运行测试 libvirt 功能的测试。
+
+TCK 是目前在上游 CI 中运行的主要集成测试框架。
+
+可用的功能测试框架：
+
+TCK 测试套件 (TCK test suite)：
+
+推荐框架： 这是目前推荐用于编写上游功能测试的框架。
+
+实现语言： 使用 libvirt 的 Perl 绑定 实现。
+
+仓库地址： 可以克隆 TCK git repo <https://gitlab.com/libvirt/libvirt-tck>__ 获取。
+
+Avocado VT：
+
+另一个功能测试框架，使用 Avocado 测试框架。
+
+尽管是用 Python 编写的，但绝大多数测试是通过命令行客户端 virsh 来操作 libvirt。
+
+libvirt-test-API：
+
+也是一个功能测试套件，使用 libvirt 的 Python 绑定 实现。
+
+不推荐： 这个框架是最不推荐的，因为它几乎无人维护，未来可能会被 TCK 完全弃用。
