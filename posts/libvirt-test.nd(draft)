@@ -10,11 +10,64 @@
 
 强制性要求： 开发者在向上游（libvirt 主仓库）提交任何代码补丁之前，必须运行并通过所有单元测试。这是代码被接受的前提条件。
 
-运行命令： 在源代码目录下，可以通过以下命令运行测试套件：
+运行命令： 在源代码目录下，可以通过以下命令运行测试套件(包含编译libvirt)：
 
 Bash
-
+$ dnf install -y meson \
+  ninja-build \
+  cmake \
+  glib2-devel \
+  libtirpc-devel \
+  libacl-devel \
+  libattr-devel \
+  audit-libs-devel \
+  libblkid-devel \
+  libcap-ng-devel \
+  libcurl-devel \
+  device-mapper-devel \
+  fuse3-devel \
+  glusterfs-devel \
+  augeas-devel \
+  python3-flake8 \
+  python3-pytest \
+  gnutls-devel \
+  libpciaccess-devel \
+  python3-docutils
+$ mkdir build && cd build
+$ meson setup ..
 $ ninja test
+输出结果类似
+
+```
+――――――――――――――――――――――――――――――――――――――――――――――――――――――― ✀  ―――――――――――――――――――――――――――――――――――――――――――――――――――――――
+stderr:
+TEST: virnetsockettest
+      ........!!!.!!!!!!!                      19  FAIL
+10 tests failed. Run them using:
+VIR_TEST_DEBUG=1 VIR_TEST_RANGE=9-11,13-19 /home/yzw/libvirt/build/tests/virnetsockettest
+――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+ 94/253 libvirt:bin / virnettlscontexttest                                             OK              0.17s
+ 95/253 libvirt:bin / securityselinuxtest                                              OK              0.05s
+ 96/253 libvirt:bin / storagepoolcapstest                                              OK              0.03s
+ 97/253 libvirt:bin / storagepoolxml2argvtest                                          OK              0.04s
+ 98/253 libvirt:bin / storagepoolxml2xmltest                                           OK              0.04s
+ 99/253 libvirt:bin / virnettlssessiontest                                             OK              0.30s
+100/253 libvirt:bin / storagevolxml2argvtest                                           OK              0.05s
+101/253 libvirt:bin / virstorageutiltest                                               OK              0.03s
+102/253 libvirt:bin / virstoragetest                                                   OK              0.04s
+103/253 libvirt:bin / vboxsnapshotxmltest                                              OK              0.05s
+104/253 libvirt:bin / vmwarevertest                                                    OK              0.03s
+105/253 libvirt:bin / vmx2xmltest                                                      OK              0.07s
+106/253 libvirt:bin / xml2vmxtest                                                      OK              0.07s
+107/253 libvirt:bin / virsh self-test                                                  OK              0.03s
+108/253 libvirt:bin / virt-admin self-test                                             OK              0.03s
+109/253 libvirt:bin / libvirtd fail with missing config                                EXPECTEDFAIL    0.02s   exit status 1
+
+```
+
+针对测试失败的用例进行查看，尝试解决，按照项目的代码风格向上游提供修复
+
 2. 容器构建 (Container builds)
 作用与目的：
 
