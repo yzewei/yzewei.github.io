@@ -182,3 +182,16 @@ index f88fb5f0b09ef9439e039560041c5693f4f83815..e94b88bc010aebd408f1d6670fbb1e99
    gdbarch_init_osabi (info, gdbarch);
    set_gdbarch_register_reggroup_p (gdbarch, loongarch_register_reggroup_p);
 ```
+
+## 附录
+线程对应的堆栈示意
+地址                     区域              生长方向
+高地址 (0xFF...)         栈 (Stack)        向下增长（向低地址）
+                        中间的巨大空隙（可用空间）
+                        mmap              区域向上或向下
+                        堆 (Heap)         向上增长（向高地址）
+                        BSS/数据段固定大小
+                        代码段 (.text)固定大小
+低地址 (0x00...)         不可访问区域
+
+
