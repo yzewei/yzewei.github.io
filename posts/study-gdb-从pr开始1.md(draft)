@@ -1,0 +1,184 @@
+pr 地址 https://sourceware.org/git/?p=binutils-gdb.git;a=commit;h=a4b1ac7f1f3b5eb05d35226017f9b7cc8bc94ac3
+# 1 解析标题
+```
+gdb: LoongArch: Record correct frame base address
+```
+可以理解这是为了记录正确的栈基地址，说明在提交之前 gdb 反馈的栈基地址是错误的
+
+# 2 解析摘要
+## 问题描述
+```
+
+Description of Problem:
+The frame_base structure is defined in gdb/frame-base.h, a typical
+implementation of frame_base is return the same value for frame base,
+locals base and args base. When debugging following code on LoongArch,
+the outputs of locals base and args base are not equal to frame base
+address in frame base register. The frame base register is sp(r3) or
+fp(r22) on LoongArch. This problem only occurs when frame base register
+is sp, there is no problem when fp is used as frame base register. When
+using gcc option -fomit-frame-pointer or writing asm code without using
+fp, the frame base register is sp.
+```
+frame base address 栈帧基地址： 整个栈帧的关键地址，固定指向一点
+locals base address 局部变量基地址： gdb定位局部变量的基地址
+args base addrss 参数变量基地址：gdb定位参数变量的基地址
+LoongArch 的函数栈帧可以用两种寄存器定义“基地址”：
+帧指针 (fp)：寄存器 $r22
+栈指针 (sp)：寄存器 $r3
+
+此处可以知道基地址的数据结构在frame-bash文件中定义，且说明了gdb调试过程中每个函数均有对应的栈帧，存储着frame base（基地址）、locals base（当前地址）和args base （参数基地址）
+当在la机器上进行debug时，涉及一个简单文件，预想local base和arg base与frame base address 相同，但是在使用-fomit-frame-pointer 指定不使用fp作为基地址时，问题出现了，frame base与其他两者地址不同。
+
+## 测试代码及结果
+```
+$ cat test.c
+int main()
+{
+  unsigned long a= 1, b = 1;
+  a = 2;
+  b = 2;
+  return 0;
+}
+$ gcc -g -fomit-frame-pointer test.c -o test
+$ gdb test
+...
+(gdb) start
+...
+Temporary breakpoint 1, main () at test.c:4
+4   unsigned long a= 1, b = 1;
+(gdb) disas
+Dump of assembler code for function main:
+   0x0000555555554740 <+0>: addi.d       $sp, $sp, -16
+=> 0x0000555555554744 <+4>: li.w         $t0, 1
+   0x0000555555554748 <+8>: st.d         $t0, $sp, 8
+   0x000055555555474c <+12>: li.w         $t0, 1
+   0x0000555555554750 <+16>: stptr.d      $t0, $sp, 0
+   0x0000555555554754 <+20>: li.w         $t0, 2
+   0x0000555555554758 <+24>: st.d         $t0, $sp, 8
+   0x000055555555475c <+28>: li.w         $t0, 2
+   0x0000555555554760 <+32>: stptr.d      $t0, $sp, 0
+   0x0000555555554764 <+36>: move         $t0, $zero
+   0x0000555555554768 <+40>: move         $a0, $t0
+   0x000055555555476c <+44>: addi.d       $sp, $sp, 16
+   0x0000555555554770 <+48>: ret
+End of assembler dump.
+(gdb) p $sp
+$1 = (void *) 0x7ffffffeb130
+(gdb) info frame
+Stack level 0, frame at 0x7ffffffeb140:
+ pc = 0x555555554744 in main (test.c:4); saved pc = 0x7ffff7e3d874
+ source language c.
+ Arglist at 0x7ffffffeb140, args:
+ Locals at 0x7ffffffeb140, Previous frame's sp is 0x7ffffffeb140
+ ```
+通过上述栈帧可以看到：
+```
+$sp = 0x7ffffffeb130
+args base address = 0x7ffffffeb140
+locals base address = 0x7ffffffeb140
+```
+为了对照，我们再运行一组使用fp作为基地址的情况
+```
+(gdb) disas
+Dump of assembler code for function main:
+   0x0000555555554758 <+0>:	addi.d      	$sp, $sp, -16
+=> 0x000055555555475c <+4>:	li.w        	$t0, 1
+   0x0000555555554760 <+8>:	st.d        	$t0, $sp, 8
+   0x0000555555554764 <+12>:	li.w        	$t0, 1
+   0x0000555555554768 <+16>:	stptr.d     	$t0, $sp, 0
+   0x000055555555476c <+20>:	li.w        	$t0, 2
+   0x0000555555554770 <+24>:	st.d        	$t0, $sp, 8
+   0x0000555555554774 <+28>:	li.w        	$t0, 2
+   0x0000555555554778 <+32>:	stptr.d     	$t0, $sp, 0
+   0x000055555555477c <+36>:	move        	$t0, $zero
+   0x0000555555554780 <+40>:	move        	$a0, $t0
+   0x0000555555554784 <+44>:	addi.d      	$sp, $sp, 16
+   0x0000555555554788 <+48>:	ret         
+End of assembler dump.
+(gdb) p $sp
+$1 = (void *) 0x7ffffffeec40
+(gdb) info frame
+Stack level 0, frame at 0x7ffffffeec50:
+ pc = 0x55555555475c in main (test.c:3); saved pc = 0x7ffff7e22208
+ source language c.
+ Arglist at 0x7ffffffeec50, args: 
+ Locals at 0x7ffffffeec50, Previous frame's sp is 0x7ffffffeec50
+```
+可以看到此时frame address == args address == locals address
+
+## 解决方案
+(3) Solution:
+
+Implement loongarch_frame_base structure and loongarch_frame_base_address()
+to record the correct frame base address stored in sp or fp register. It can
+be calculated by subtracting the framebase_offset from the prev_sp recorded
+in loongarch_frame_cache. And locals base and args base here are equal to
+frame base.
+不使用默认的frame_base_address函数，引入loongarch_frame_base 自定义的结构体以及loongarch_frame_base_address函数去记录正确的sp/fp地址。
+可以通过prev_sp（上一个栈帧的sp/fp）减去framebase_offset（偏移量）来修正
+
+具体代码：
+自己思考一下实现思路：
+首先不再使用默认的frame_base_address获取frame地址
+其次 查看默认的frame_base_address结构体可以看到：
+```
+struct frame_base {
+    frame_unwind_func *unwind_func;
+    frame_base_addr_func *frame_base_address;
+    frame_base_addr_func *locals_base_address;
+    frame_base_addr_func *args_base_address;
+};
+```
+首先，使用同一个默认函数，因此需要将他们拆分开来
+其次，需要实现一个获取frame地址的函数，计算方式是上一个栈帧的地址-offset，具体实现如下：
+
+```
+index f88fb5f0b09ef9439e039560041c5693f4f83815..e94b88bc010aebd408f1d6670fbb1e99fcf95895 100644 (file)
+--- a/gdb/loongarch-tdep.c
++++ b/gdb/loongarch-tdep.c
+@@ -22,6 +22,7 @@
+ #include "dwarf2/frame.h"
+ #include "elf-bfd.h"
+ #include "extract-store-integer.h"
++#include "frame-base.h"
+ #include "frame-unwind.h"
+ #include "gdbcore.h"
+ #include "linux-record.h"
+@@ -787,6 +788,26 @@ static const struct frame_unwind_legacy loongarch_frame_unwind (
+   /*.prev_arch    =*/nullptr
+ );
+ 
++/* Return the frame base address of *THIS_FRAME.  */
++
++static CORE_ADDR
++loongarch_frame_base_address (const frame_info_ptr &this_frame, void **this_cache)
++{
++  struct loongarch_frame_cache *cache
++    = loongarch_frame_cache (this_frame, this_cache);
++
++  return cache->prev_sp - cache->framebase_offset;
++}
++
++/* LoongArch default frame base information.  */
++static frame_base loongarch_frame_base =
++{
++  &loongarch_frame_unwind,
++  loongarch_frame_base_address,
++  loongarch_frame_base_address,
++  loongarch_frame_base_address
++};
++
+ /* Write the contents of buffer VAL into the general-purpose argument
+    register defined by GAR in REGCACHE.  GAR indicates the available
+    general-purpose argument registers which should be a value in the
+@@ -2207,6 +2228,8 @@ loongarch_gdbarch_init (struct gdbarch_info info, struct gdbarch_list *arches)
+   dwarf2_append_unwinders (gdbarch);
+   frame_unwind_append_unwinder (gdbarch, &loongarch_frame_unwind);
+ 
++  frame_base_set_default (gdbarch, &loongarch_frame_base);
++
+   /* Hook in OS ABI-specific overrides, if they have been registered.  */
+   gdbarch_init_osabi (info, gdbarch);
+   set_gdbarch_register_reggroup_p (gdbarch, loongarch_register_reggroup_p);
+```
